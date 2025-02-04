@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
 import "leaflet/dist/leaflet.css";
-import L, { Map as LeafletMap, Icon, DivIcon } from "leaflet";
-import { Polyline } from "react-leaflet";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -19,9 +19,18 @@ const Marker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false }
 );
+const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  { ssr: false }
+);
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
+
+let L: any;
+if (typeof window !== "undefined") {
+  L = require("leaflet");
+}
 
 interface BusStop {
   DURAK_ID: number;
@@ -38,27 +47,24 @@ interface RoutePoint {
 
 const LiveBusMap: React.FC = () => {
   const [busStops, setBusStops] = useState<BusStop[]>([]);
-  const [busIcon, setBusIcon] = useState<Icon | DivIcon | undefined>(undefined);
-  const [favoriteStops, setFavoriteStops] = useState<number[]>([]);
+  const [busIcon, setBusIcon] = useState<any | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredStops, setFilteredStops] = useState<BusStop[]>([]);
   const [route, setRoute] = useState<[number, number][]>([]);
-  const mapRef = useRef<LeafletMap | null>(null);
+  const mapRef = useRef<any>(null);
 
   useEffect(() => {
-    const busMarkerIcon = new L.Icon({
-      iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -40],
-    });
+    if (typeof window !== "undefined") {
+      import("leaflet").then((leaflet) => {
+        const busMarkerIcon = new leaflet.Icon({
+          iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -40],
+        });
 
-    setBusIcon(busMarkerIcon);
-
-    const savedFavorites = JSON.parse(
-      localStorage.getItem("favoriteStops") || "[]"
-    );
-    setFavoriteStops(savedFavorites);
+        setBusIcon(busMarkerIcon);
+      });
+    }
 
     const fetchBusStops = async () => {
       try {
@@ -78,7 +84,6 @@ const LiveBusMap: React.FC = () => {
         }));
 
         setBusStops(busStopData);
-        setFilteredStops(busStopData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -86,22 +91,6 @@ const LiveBusMap: React.FC = () => {
 
     fetchBusStops();
   }, []);
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && searchQuery.trim() !== "") {
-      const matchingStops = busStops.filter((stop) =>
-        stop.DURAKTAN_GECEN_HATLAR.includes(searchQuery)
-      );
-
-      if (matchingStops.length > 0 && mapRef.current) {
-        mapRef.current.setView(
-          [matchingStops[0].ENLEM, matchingStops[0].BOYLAM],
-          15,
-          { animate: true }
-        );
-      }
-    }
-  };
 
   const fetchRoute = async () => {
     if (!searchQuery) {
@@ -143,7 +132,6 @@ const LiveBusMap: React.FC = () => {
           placeholder="Otobüs Hat No gir..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
         />
         <button
           onClick={fetchRoute}
@@ -170,7 +158,7 @@ const LiveBusMap: React.FC = () => {
           attribution="Google Maps Traffic"
         />
 
-        {filteredStops.map((stop) => (
+        {busStops.map((stop) => (
           <Marker
             key={stop.DURAK_ID}
             position={[stop.ENLEM, stop.BOYLAM]}

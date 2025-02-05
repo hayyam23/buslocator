@@ -12,7 +12,7 @@ async function getBusLocations() {
   console.log("Otobüs Konumları:", data.HatOtobusKonumlari); // Gelen veriyi kontrol edin
   return data.HatOtobusKonumlari || [];
 }
-
+sksksksksk
 export default async function Home() {
   const busLocations = await getBusLocations();
 

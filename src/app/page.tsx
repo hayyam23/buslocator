@@ -1,8 +1,9 @@
-"use client";
+"use client";   /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from "react";
 import Map from "./components/Map";
 import "leaflet/dist/leaflet.css";
 import dynamic from "next/dynamic";
+import { Icon } from "leaflet";
 // Define types for bus details and other data structures 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -16,18 +17,18 @@ const Marker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false }
 );
-const Polyline = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Polyline),
-  { ssr: false }
-);
+//const Polyline = dynamic(
+//() => import("react-leaflet").then((mod) => mod.Polyline),
+// { ssr: false }
+//);
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
 
-let L: any;
-if (typeof window !== "undefined") {
-  L = require("leaflet");
-}
+//let L: any;
+//if (typeof window !== "undefined") {
+// L = require("leaflet");
+//}
 
 
 
@@ -162,20 +163,21 @@ async function fetchStationDetails(
 export default function Home() {
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [busDetails, setBusDetails] = useState<BusDetails[]>([]);
-  const [busIcon, setBusIcon] = useState<any | undefined>(undefined);
-  const mapRef = useRef<any>(null);
+  const [busIcon, setBusIcon] = useState<Icon | undefined>(undefined);//any idi chanced to icon
+  const mapRef = useRef(null as any); //const mapRef = useRef<any>(null);
   const [additionalBusDetails, setAdditionalBusDetails] = useState<
     AdditionalBusDetails[]
+
   >([]);
   const [extraBusDetails, setExtraBusDetails] = useState<ExtraBusDetails[]>([]);
   const [stationDetails, setStationDetails] = useState<StationDetails[]>([]);
   const [hatNo, setHatNo] = useState<string>("");
   const [busSearchTerm, setBusSearchTerm] = useState<string>(""); // Otobüs arama terimi
-  const [additionalBusSearchTerm, setAdditionalBusSearchTerm] =
+  const [additionalBusSearchTerm] =
     useState<string>(""); // Ek otobüs arama terimi
   const [extraBusSearchTerm, setExtraBusSearchTerm] = useState<string>(""); // Ekstra otobüs arama terimi
   const [stationSearchTerm, setStationSearchTerm] = useState<string>(""); // Durak arama terimi
-
+  console.log(additionalBusDetails)
   // Otobüs detaylarını sayfa yüklendiğinde bir kere çek
   useEffect(() => {
 
@@ -211,9 +213,9 @@ export default function Home() {
     bus.HAT_NO.toString().includes(busSearchTerm)
   );
 
-  const filteredAdditionalBusDetails = additionalBusDetails.filter((bus) =>
-    bus.HAT_NO.toString().includes(additionalBusSearchTerm)
-  );
+  // const filteredAdditionalBusDetails = additionalBusDetails.filter((bus) =>
+  //   bus.HAT_NO.toString().includes(additionalBusSearchTerm)
+  // );
 
   const filteredExtraBusDetails = extraBusDetails.filter((bus) =>
     bus.HAT_NO.toString().includes(extraBusSearchTerm)

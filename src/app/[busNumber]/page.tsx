@@ -38,7 +38,7 @@ const BusPage = ({ params }: Props) => {
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busData, setBusData] = useState<BusSchedule | null>(null); // Otobüs verisini tutacak state
-
+  console.log(busData)
   useEffect(() => {
     const fetchBusLocations = async () => {
       try {

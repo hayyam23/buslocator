@@ -1,9 +1,36 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import Map from "./components/Map";
+import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
+// Define types for bus details and other data structures 
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  { ssr: false }
+);
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
 
-// Define types for bus details and other data structures
+let L: any;
+if (typeof window !== "undefined") {
+  L = require("leaflet");
+}
+
+
+
 interface BusDetails {
   HAT_NO: string;
   TARIFE_ID: string;
@@ -33,6 +60,14 @@ interface BusLocation {
   Yon: number;
   KoorY: string;
   KoorX: string;
+}
+
+interface StationDetails {
+  DURAK_ID: number;
+  DURAK_ADI: string;
+  ENLEM: string;
+  BOYLAM: string;
+  DURAKTAN_GECEN_HATLAR: string;
 }
 
 // Otobüs konumlarını getiren fonksiyon
@@ -107,29 +142,68 @@ async function fetchExtraBusDetails(
   }
 }
 
+// Yeni durak verilerini çeken fonksiyon
+async function fetchStationDetails(
+  setStationDetails: React.Dispatch<React.SetStateAction<StationDetails[]>>
+) {
+  try {
+    const res = await fetch(
+      "https://acikveri.bizizmir.com/api/3/action/datastore_search?resource_id=0c791266-a2e4-4f14-82b8-9a9b102fbf94&limit=10",
+      { cache: "no-store" }
+    );
+    const data = await res.json();
+    console.log("Durak Detayları:", data.result.records);
+    setStationDetails(data.result.records || []);
+  } catch (error) {
+    console.error("Durak detayları çekilirken hata oluştu:", error);
+  }
+}
+
 export default function Home() {
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [busDetails, setBusDetails] = useState<BusDetails[]>([]);
+  const [busIcon, setBusIcon] = useState<any | undefined>(undefined);
+  const mapRef = useRef<any>(null);
   const [additionalBusDetails, setAdditionalBusDetails] = useState<
     AdditionalBusDetails[]
   >([]);
   const [extraBusDetails, setExtraBusDetails] = useState<ExtraBusDetails[]>([]);
+  const [stationDetails, setStationDetails] = useState<StationDetails[]>([]);
   const [hatNo, setHatNo] = useState<string>("");
   const [busSearchTerm, setBusSearchTerm] = useState<string>(""); // Otobüs arama terimi
   const [additionalBusSearchTerm, setAdditionalBusSearchTerm] =
     useState<string>(""); // Ek otobüs arama terimi
   const [extraBusSearchTerm, setExtraBusSearchTerm] = useState<string>(""); // Ekstra otobüs arama terimi
+  const [stationSearchTerm, setStationSearchTerm] = useState<string>(""); // Durak arama terimi
 
   // Otobüs detaylarını sayfa yüklendiğinde bir kere çek
   useEffect(() => {
+
+
     fetchBusDetails(setBusDetails);
     fetchAdditionalBusDetails(setAdditionalBusDetails); // Ek verileri çek
     fetchExtraBusDetails(setExtraBusDetails); // Yeni verileri çek
+    fetchStationDetails(setStationDetails); // Durak verilerini çek 
+
+    if (typeof window !== "undefined") {
+      import("leaflet").then((leaflet) => {
+        const busMarkerIcon = new leaflet.Icon({
+          iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -40],
+        });
+
+        setBusIcon(busMarkerIcon);
+      });
+    }
+
   }, []);
 
   // Otobüs konumlarını sadece hatNo değiştiğinde çek
   useEffect(() => {
     fetchBusLocations(hatNo, setBusLocations);
+
   }, [hatNo]);
 
   // HAT_NO'ya göre filtreleme fonksiyonu
@@ -145,6 +219,10 @@ export default function Home() {
     bus.HAT_NO.toString().includes(extraBusSearchTerm)
   );
 
+  const filteredStationDetails = stationDetails.filter((station) =>
+    station.DURAK_ADI.toLowerCase().includes(stationSearchTerm.toLowerCase())
+  );
+
   return (
     <div
       style={{
@@ -154,7 +232,7 @@ export default function Home() {
         padding: 20,
       }}
     >
-      <h1>İzmir Otobüs Konumları</h1>
+      <h1>İzmir Otobüs Konumları ve Duraklar</h1>
       <div style={{ marginBottom: 20 }}>
         <input
           type="text"
@@ -172,7 +250,8 @@ export default function Home() {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-around",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
           width: "100%",
           marginTop: 20,
         }}
@@ -180,13 +259,13 @@ export default function Home() {
         {/* Otobüs Detayları */}
         <div
           style={{
-            width: "300px",
+            width: "23%",
             maxHeight: "300px",
             overflowY: "auto",
             border: "1px solid gray",
             borderRadius: 5,
             padding: 10,
-            marginRight: 20,
+            marginBottom: "20px",
           }}
         >
           <h2 style={{ textAlign: "center" }}>Otobüs Detayları</h2>
@@ -222,72 +301,21 @@ export default function Home() {
                 <p>
                   <strong>Dönüş Saati:</strong> {bus.DONUS_SAATI}
                 </p>
-                <p>
-                  <strong>Sıra:</strong> {bus.SIRA}
-                </p>
               </div>
             ))
           )}
         </div>
 
-        {/* Ek Otobüs Detayları */}
+        {/* Ekstra Detaylar */}
         <div
           style={{
-            width: "300px",
+            width: "23%",
             maxHeight: "300px",
             overflowY: "auto",
             border: "1px solid gray",
             borderRadius: 5,
             padding: 10,
-          }}
-        >
-          <h2 style={{ textAlign: "center" }}>Duyurular</h2>
-          <input
-            type="text"
-            placeholder="Hat numarası ara"
-            style={{
-              padding: 8,
-              borderRadius: 5,
-              color: "black",
-              marginBottom: 10,
-            }}
-            value={additionalBusSearchTerm}
-            onChange={(e) => setAdditionalBusSearchTerm(e.target.value)}
-          />
-          {filteredAdditionalBusDetails.length === 0 ? (
-            <p>Yükleniyor...</p>
-          ) : (
-            filteredAdditionalBusDetails.map((bus, index) => (
-              <div
-                key={index}
-                style={{ borderBottom: "1px solid gray", padding: 10 }}
-              >
-                <p>
-                  <strong>Hat No:</strong> {bus.HAT_NO}
-                </p>
-                <p>
-                  <strong>Başlık:</strong> {bus.BASLIK}
-                </p>
-                <p>
-                  <strong>Başlama Tarihi:</strong> {bus.BASLAMA_TARIHI}
-                </p>
-                <p>
-                  <strong>Bitis Tarihi:</strong> {bus.BITIS_TARIHI}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Ekstra Otobüs Detayları */}
-        <div
-          style={{
-            width: "300px",
-            maxHeight: "300px",
-            overflowY: "auto",
-            border: "1px solid gray",
-            borderRadius: 5,
-            padding: 10,
+            marginBottom: "20px",
           }}
         >
           <h2 style={{ textAlign: "center" }}>Ekstra Otobüs Detayları</h2>
@@ -320,20 +348,142 @@ export default function Home() {
                 <p>
                   <strong>Güzergah Açıklama:</strong> {bus.GUZERGAH_ACIKLAMA}
                 </p>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Durak Detayları */}
+        <div
+          style={{
+            width: "23%",
+            maxHeight: "300px",
+            overflowY: "auto",
+            border: "1px solid gray",
+            borderRadius: 5,
+            padding: 10,
+            marginBottom: "20px",
+          }}
+        >
+          <h2 style={{ textAlign: "center" }}>Durak Detayları</h2>
+          <input
+            type="text"
+            placeholder="Durak adı ara"
+            style={{
+              padding: 8,
+              borderRadius: 5,
+              color: "black",
+              marginBottom: 10,
+            }}
+            value={stationSearchTerm}
+            onChange={(e) => setStationSearchTerm(e.target.value)}
+          />
+          {filteredStationDetails.length === 0 ? (
+            <p>Yükleniyor...</p>
+          ) : (
+            filteredStationDetails.map((station, index) => (
+              <div
+                key={index}
+                style={{ borderBottom: "1px solid gray", padding: 10 }}
+              >
                 <p>
-                  <strong>Açıklama:</strong> {bus.ACIKLAMA}
+                  <strong>Durak Adı:</strong> {station.DURAK_ADI}
                 </p>
                 <p>
-                  <strong>Başlangıç:</strong> {bus.HAT_BASLANGIC}
+                  <strong>Enlem:</strong> {station.ENLEM}
                 </p>
                 <p>
-                  <strong>Bitiriş:</strong> {bus.HAT_BITIS}
+                  <strong>Boylam:</strong> {station.BOYLAM}
                 </p>
               </div>
             ))
           )}
         </div>
+
+        {/* Ekstra Otobüs Detayları */}
+        <div
+          style={{
+            width: "23%",
+            maxHeight: "300px",
+            overflowY: "auto",
+            border: "1px solid gray",
+            borderRadius: 5,
+            padding: 10,
+            marginBottom: "20px",
+          }}
+        >
+          <h2 style={{ textAlign: "center" }}>Ekstra Otobüs Detayları</h2>
+          <input
+            type="text"
+            placeholder="Hat numarası ara"
+            style={{
+              padding: 8,
+              borderRadius: 5,
+              color: "black",
+              marginBottom: 10,
+            }}
+            value={stationSearchTerm}
+            onChange={(e) => setStationSearchTerm(e.target.value)}
+          />
+          {filteredStationDetails.length === 0 ? (
+            <p>Yükleniyor...</p>
+          ) : (
+            filteredStationDetails.map((station, index) => (
+              <div
+                key={index}
+                style={{
+                  borderBottom: "1px solid gray",
+                  padding: 10,
+                }}
+              >
+                <p>
+                  <strong>Durak Adı:</strong> {station.DURAK_ADI}
+                </p>
+                <p>
+                  <strong>Enlem:</strong> {station.ENLEM}
+                </p>
+                <p>
+                  <strong>Boylam:</strong> {station.BOYLAM}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+
       </div>
+      <MapContainer
+        center={[38.48604, 27.056975]}
+        zoom={13}
+        style={{ height: "600px", width: "100%" }}
+        ref={mapRef}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer
+          url="https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}"
+          attribution="Google Maps Traffic"
+        />
+
+        {stationDetails.map((stop) => (
+          <Marker
+            key={stop.DURAK_ID}
+            position={[Number(stop.ENLEM), Number(stop.BOYLAM)]}
+            icon={busIcon}
+          >
+            <Popup>
+              <b>Durak Adı:</b> {stop.DURAK_ADI} <br />
+              <b>Hat No:</b> {stop.DURAKTAN_GECEN_HATLAR} <br />
+              <button onClick={() => alert("Favorilere Eklendi!")}>
+                ⭐ Favorilere Ekle
+              </button>
+            </Popup>
+          </Marker>
+        ))}
+
+
+      </MapContainer>
     </div>
   );
 }
+
+
+

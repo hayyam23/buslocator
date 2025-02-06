@@ -178,6 +178,7 @@ export default function Home() {
   const [extraBusSearchTerm, setExtraBusSearchTerm] = useState<string>(""); // Ekstra otobüs arama terimi
   const [stationSearchTerm, setStationSearchTerm] = useState<string>(""); // Durak arama terimi
   console.log(additionalBusDetails)
+  console.log(additionalBusSearchTerm)
   // Otobüs detaylarını sayfa yüklendiğinde bir kere çek
   useEffect(() => {
 

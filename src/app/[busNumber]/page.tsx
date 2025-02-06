@@ -79,7 +79,7 @@ const BusPage = ({ params }: Props) => {
         const data = await res.json();
         setBusData(data.result.records);
         console.log("Otobüs Verileri:", data.result.records || []); // Terminalde görmek için log
-        console.log(busData);
+        // console.log(busData);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Bilinmeyen bir hata oluştu."

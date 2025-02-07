@@ -164,7 +164,8 @@ export default function Home() {
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [busDetails, setBusDetails] = useState<BusDetails[]>([]);
   const [busIcon, setBusIcon] = useState<Icon | undefined>(undefined);//any idi chanced to icon
-  const mapRef = useRef(null as any); //const mapRef = useRef<any>(null);
+  const mapRef = useRef(null as any); //const mapRef = useRef<any>(null); 
+  console.log(mapRef)
   const [additionalBusDetails, setAdditionalBusDetails] = useState<
     AdditionalBusDetails[]
 
@@ -177,6 +178,7 @@ export default function Home() {
     useState<string>(""); // Ek otobüs arama terimi
   const [extraBusSearchTerm, setExtraBusSearchTerm] = useState<string>(""); // Ekstra otobüs arama terimi
   const [stationSearchTerm, setStationSearchTerm] = useState<string>(""); // Durak arama terimi
+  console.log(setStationSearchTerm)
   console.log(additionalBusDetails)
   console.log(additionalBusSearchTerm)
   // Otobüs detaylarını sayfa yüklendiğinde bir kere çek
@@ -229,6 +231,7 @@ export default function Home() {
   const filteredStationDetails = stationDetails.filter((station) =>
     station.DURAK_ADI.toLowerCase().includes(stationSearchTerm.toLowerCase())
   );
+  console.log(filteredStationDetails)
 
   return (
     <div

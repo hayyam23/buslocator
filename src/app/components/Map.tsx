@@ -21,10 +21,12 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
 
-let L: any;
+let L!: typeof import("leaflet");
+
 if (typeof window !== "undefined") {
   L = require("leaflet");
 }
+
 
 if (typeof window !== "undefined") {
   delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void })
@@ -49,7 +51,7 @@ interface MapProps {
 }
 
 const Map: React.FC<MapProps> = ({ busLocations }) => {
-  const [busIcon, setBusIcon] = useState<any | null>(null);
+  const [busIcon, setBusIcon] = useState<L.Icon | null>(null);//const [busIcon, setBusIcon] = useState<any | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

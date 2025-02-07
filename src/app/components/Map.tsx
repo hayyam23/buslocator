@@ -24,7 +24,7 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 let L!: typeof import("leaflet");
 
 if (typeof window !== "undefined") {
-  L = require("leaflet");
+  L = require("leaflet") as typeof import("leaflet");
 }
 
 

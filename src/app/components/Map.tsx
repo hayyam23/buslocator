@@ -20,30 +20,24 @@ const Marker = dynamic(
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let L: any;
-
 if (typeof window !== "undefined") {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    L = require("leaflet");
-
-    if (L?.Icon?.Default) {
-      delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void })
-        ._getIconUrl;
-
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-    }
-  } catch (error) {
-    console.error("Leaflet yüklenirken hata oluştu:", error);
-  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  L = require("leaflet");
 }
 
+// Leaflet varsayılan ikon ayarlarını düzelt
+if (typeof window !== "undefined") {
+  delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void })
+    ._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+}
 
 interface BusLocation {
   OtobusId: number;

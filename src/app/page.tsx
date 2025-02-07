@@ -209,6 +209,10 @@ export default function Home() {
 
   }, [hatNo]);
 
+
+
+
+
   // HAT_NO'ya göre filtreleme fonksiyonu
   const filteredBusDetails = busDetails.filter((bus) =>
     bus.HAT_NO.toString().includes(busSearchTerm)
@@ -232,7 +236,7 @@ export default function Home() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: 20,
+        padding: 50,
       }}
     >
       <h1>İzmir Otobüs Konumları ve Duraklar</h1>
@@ -247,40 +251,38 @@ export default function Home() {
       </div>
 
       {/* Otobüs Konumları */}
-      <Map busLocations={busLocations} />
+      <div style={{ width: "100%", height: "400px", marginBottom: "300px" }}>
+        <Map busLocations={busLocations} />
+      </div>
 
       {/* Otobüs Detayları ve Ek Detaylar (Yan Yana) */}
       <div
         style={{
           display: "flex",
           flexWrap: "wrap",
-          justifyContent: "space-between",
-          width: "100%",
+          justifyContent: "center",
+          width: "80%",
           marginTop: 20,
+          // gap: "20px", // Kartlar arasında boşluk
         }}
       >
         {/* Otobüs Detayları */}
         <div
           style={{
-            width: "23%",
+            flex: "1",
+            maxWidth: "700px",
             maxHeight: "300px",
             overflowY: "auto",
-            border: "1px solid gray",
+            border: "5px solid gray",
             borderRadius: 5,
-            padding: 10,
-            marginBottom: "20px",
+            padding: 30,
           }}
         >
           <h2 style={{ textAlign: "center" }}>Otobüs Detayları</h2>
           <input
             type="text"
             placeholder="Hat numarası ara"
-            style={{
-              padding: 8,
-              borderRadius: 5,
-              color: "black",
-              marginBottom: 10,
-            }}
+            style={{ padding: 8, borderRadius: 5, color: "black", marginBottom: 10 }}
             value={busSearchTerm}
             onChange={(e) => setBusSearchTerm(e.target.value)}
           />
@@ -288,22 +290,11 @@ export default function Home() {
             <p>Yükleniyor...</p>
           ) : (
             filteredBusDetails.map((bus, index) => (
-              <div
-                key={index}
-                style={{ borderBottom: "1px solid gray", padding: 10 }}
-              >
-                <p>
-                  <strong>Hat No:</strong> {bus.HAT_NO}
-                </p>
-                <p>
-                  <strong>Tarife ID:</strong> {bus.TARIFE_ID}
-                </p>
-                <p>
-                  <strong>Gidiş Saati:</strong> {bus.GIDIS_SAATI}
-                </p>
-                <p>
-                  <strong>Dönüş Saati:</strong> {bus.DONUS_SAATI}
-                </p>
+              <div key={index} style={{ borderBottom: "1px solid gray", padding: 10 }}>
+                <p><strong>Hat No:</strong> {bus.HAT_NO}</p>
+                <p><strong>Tarife ID:</strong> {bus.TARIFE_ID}</p>
+                <p><strong>Gidiş Saati:</strong> {bus.GIDIS_SAATI}</p>
+                <p><strong>Dönüş Saati:</strong> {bus.DONUS_SAATI}</p>
               </div>
             ))
           )}
@@ -312,25 +303,20 @@ export default function Home() {
         {/* Ekstra Detaylar */}
         <div
           style={{
-            width: "23%",
+            flex: "1",
+            maxWidth: "700px",
             maxHeight: "300px",
             overflowY: "auto",
-            border: "1px solid gray",
+            border: "5px solid gray",
             borderRadius: 5,
-            padding: 10,
-            marginBottom: "20px",
+            padding: 30,
           }}
         >
           <h2 style={{ textAlign: "center" }}>Ekstra Otobüs Detayları</h2>
           <input
             type="text"
             placeholder="Hat numarası ara"
-            style={{
-              padding: 8,
-              borderRadius: 5,
-              color: "black",
-              marginBottom: 10,
-            }}
+            style={{ padding: 8, borderRadius: 5, color: "black", marginBottom: 10 }}
             value={extraBusSearchTerm}
             onChange={(e) => setExtraBusSearchTerm(e.target.value)}
           />
@@ -338,46 +324,32 @@ export default function Home() {
             <p>Yükleniyor...</p>
           ) : (
             filteredExtraBusDetails.map((bus, index) => (
-              <div
-                key={index}
-                style={{ borderBottom: "1px solid gray", padding: 10 }}
-              >
-                <p>
-                  <strong>Hat No:</strong> {bus.HAT_NO}
-                </p>
-                <p>
-                  <strong>Hat Adı:</strong> {bus.HAT_ADI}
-                </p>
-                <p>
-                  <strong>Güzergah Açıklama:</strong> {bus.GUZERGAH_ACIKLAMA}
-                </p>
+              <div key={index} style={{ borderBottom: "1px solid gray", padding: 10 }}>
+                <p><strong>Hat No:</strong> {bus.HAT_NO}</p>
+                <p><strong>Hat Adı:</strong> {bus.HAT_ADI}</p>
+                <p><strong>Güzergah Açıklama:</strong> {bus.GUZERGAH_ACIKLAMA}</p>
               </div>
             ))
           )}
         </div>
 
-        {/* Durak Detayları */}
+        {/* Durak Detayları 
         <div
           style={{
-            width: "23%",
+            flex: "1",
+            maxWidth: "350px",
             maxHeight: "300px",
             overflowY: "auto",
             border: "1px solid gray",
-            borderRadius: 5,
-            padding: 10,
-            marginBottom: "20px",
+            borderRadius: 50,
+            padding: 20,
           }}
         >
           <h2 style={{ textAlign: "center" }}>Durak Detayları</h2>
           <input
             type="text"
             placeholder="Durak adı ara"
-            style={{
-              padding: 8,
-              borderRadius: 5,
-              color: "black",
-              marginBottom: 10,
-            }}
+            style={{ padding: 8, borderRadius: 5, color: "black", marginBottom: 10 }}
             value={stationSearchTerm}
             onChange={(e) => setStationSearchTerm(e.target.value)}
           />
@@ -385,107 +357,49 @@ export default function Home() {
             <p>Yükleniyor...</p>
           ) : (
             filteredStationDetails.map((station, index) => (
-              <div
-                key={index}
-                style={{ borderBottom: "1px solid gray", padding: 10 }}
-              >
-                <p>
-                  <strong>Durak Adı:</strong> {station.DURAK_ADI}
-                </p>
-                <p>
-                  <strong>Enlem:</strong> {station.ENLEM}
-                </p>
-                <p>
-                  <strong>Boylam:</strong> {station.BOYLAM}
-                </p>
+              <div key={index} style={{ borderBottom: "1px solid gray", padding: 10 }}>
+                <p><strong>Durak Adı:</strong> {station.DURAK_ADI}</p>
+                <p><strong>Enlem:</strong> {station.ENLEM}</p>
+                <p><strong>Boylam:</strong> {station.BOYLAM}</p>
               </div>
             ))
           )}
-        </div>
-
-        {/* Ekstra Otobüs Detayları */}
-        <div
-          style={{
-            width: "23%",
-            maxHeight: "300px",
-            overflowY: "auto",
-            border: "1px solid gray",
-            borderRadius: 5,
-            padding: 10,
-            marginBottom: "20px",
-          }}
-        >
-          <h2 style={{ textAlign: "center" }}>Ekstra Otobüs Detayları</h2>
-          <input
-            type="text"
-            placeholder="Hat numarası ara"
-            style={{
-              padding: 8,
-              borderRadius: 5,
-              color: "black",
-              marginBottom: 10,
-            }}
-            value={stationSearchTerm}
-            onChange={(e) => setStationSearchTerm(e.target.value)}
-          />
-          {filteredStationDetails.length === 0 ? (
-            <p>Yükleniyor...</p>
-          ) : (
-            filteredStationDetails.map((station, index) => (
-              <div
-                key={index}
-                style={{
-                  borderBottom: "1px solid gray",
-                  padding: 10,
-                }}
-              >
-                <p>
-                  <strong>Durak Adı:</strong> {station.DURAK_ADI}
-                </p>
-                <p>
-                  <strong>Enlem:</strong> {station.ENLEM}
-                </p>
-                <p>
-                  <strong>Boylam:</strong> {station.BOYLAM}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
+        </div>*/}
       </div>
-      <MapContainer
-        center={[38.48604, 27.056975]}
-        zoom={13}
-        style={{ height: "600px", width: "100%" }}
-        ref={mapRef}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <TileLayer
-          url="https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}"
-          attribution="Google Maps Traffic"
-        />
 
-        {stationDetails.map((stop) => (
-          <Marker
-            key={stop.DURAK_ID}
-            position={[Number(stop.ENLEM), Number(stop.BOYLAM)]}
-            icon={busIcon}
-          >
-            <Popup>
-              <b>Durak Adı:</b> {stop.DURAK_ADI} <br />
-              <b>Hat No:</b> {stop.DURAKTAN_GECEN_HATLAR} <br />
-              <button onClick={() => alert("Favorilere Eklendi!")}>
-                ⭐ Favorilere Ekle
-              </button>
-            </Popup>
-          </Marker>
-        ))}
-
-
-      </MapContainer>
+      {/* Harita Bölümü */}
+      <div style={{ width: "60%", height: "300px", marginTop: "20px" }}>
+        <MapContainer
+          center={[38.48604, 27.056975]}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+        // ref={mapRef}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            url="https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}"
+            attribution="Google Maps Traffic"
+          />
+          {stationDetails.map((stop) => (
+            <Marker
+              key={stop.DURAK_ID}
+              position={[Number(stop.ENLEM), Number(stop.BOYLAM)]}
+              icon={busIcon}
+            >
+              <Popup>
+                <b>Durak Adı:</b> {stop.DURAK_ADI} <br />
+                <b>Hat No:</b> {stop.DURAKTAN_GECEN_HATLAR} <br />
+                <button onClick={() => alert("Favorilere Eklendi!")}>
+                  ⭐ Favorilere Ekle
+                </button>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
     </div>
   );
+
 }
 
 

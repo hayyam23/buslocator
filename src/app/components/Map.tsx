@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
+import { useMap } from "react-leaflet";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -23,11 +23,9 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 
 let L: any;
 if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   L = require("leaflet");
 }
 
-// Leaflet varsayılan ikon ayarlarını düzelt
 if (typeof window !== "undefined") {
   delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void })
     ._getIconUrl;
@@ -42,8 +40,8 @@ if (typeof window !== "undefined") {
 interface BusLocation {
   OtobusId: number;
   Yon: number;
-  KoorY: string; // Boylam
-  KoorX: string; // Enlem
+  KoorY: string;
+  KoorX: string;
 }
 
 interface MapProps {
@@ -68,18 +66,17 @@ const Map: React.FC<MapProps> = ({ busLocations }) => {
     }
   }, []);
 
-  // Geçerli koordinatlara sahip otobüsleri filtrele ve dönüştür
   const validBusLocations = busLocations
-    .filter((bus) => bus.KoorX !== "0" && bus.KoorY !== "0") // Geçersiz koordinatları çıkar
+    .filter((bus) => bus.KoorX !== "0" && bus.KoorY !== "0")
     .map((bus) => ({
       ...bus,
-      latitude: parseFloat(bus.KoorX.replace(",", ".")), // Enlem
-      longitude: parseFloat(bus.KoorY.replace(",", ".")), // Boylam
+      latitude: parseFloat(bus.KoorX.replace(",", ".")),
+      longitude: parseFloat(bus.KoorY.replace(",", ".")),
     }));
 
   return (
     <MapContainer
-      center={[38.48604, 27.056975]} // İzmir merkez koordinatları
+      center={[38.48604, 27.056975]}
       zoom={13}
       style={{ height: "600px", width: "100%" }}
     >
@@ -88,11 +85,13 @@ const Map: React.FC<MapProps> = ({ busLocations }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
 
+      <AutoZoom busLocations={validBusLocations} />
+
       {busIcon &&
         validBusLocations.map((bus, index) => (
           <Marker
-            key={`${bus.OtobusId}-${index}`} // Benzersiz bir key oluştur
-            position={[bus.latitude, bus.longitude]} // Enlem ve boylamı kullan
+            key={`${bus.OtobusId}-${index}`}
+            position={[bus.latitude, bus.longitude]}
             icon={busIcon}
           >
             <Popup>
@@ -106,3 +105,17 @@ const Map: React.FC<MapProps> = ({ busLocations }) => {
 };
 
 export default Map;
+
+// Otomatik zoom bileşeni
+const AutoZoom: React.FC<{ busLocations: { latitude: number; longitude: number }[] }> = ({ busLocations }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (busLocations.length > 0) {
+      const bounds = L.latLngBounds(busLocations.map(bus => [bus.latitude, bus.longitude]));
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [busLocations, map]);
+
+  return null;
+};

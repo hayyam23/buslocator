@@ -24,9 +24,10 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 let L!: typeof import("leaflet");
 
 if (typeof window !== "undefined") {
-  L = require("leaflet") as typeof import("leaflet");
+  import("leaflet").then((leafletModule) => {
+    L = leafletModule;
+  });
 }
-
 
 if (typeof window !== "undefined") {
   delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void })
